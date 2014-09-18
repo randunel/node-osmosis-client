@@ -1,0 +1,2 @@
+node-osmosis-client
+===================
