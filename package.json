@@ -1,0 +1,11 @@
+{
+    "name": "osmosis-client",
+    "version": "0.0.1",
+    "main": "index.js",
+    "dependencies": {
+        "ssh2": "0.3.x",
+        "request": "2.44.x",
+        "minimist": "1.1.x"
+    }
+}
+
