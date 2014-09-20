@@ -12,14 +12,20 @@ var request = require('request');
 var Connection = require('ssh2');
 var argv = require('minimist')(process.argv.slice(2));
 
-var server = 'localhost';
-var url = 'http://' + server + ':8000';
+var server = argv.s || 'osmosis.mene.ro';
+var url = 'http://' + server;
 // var key = path.join(process.env.HOME, '.ssh', 'id_rsa.pub');
 var dir = path.join(__dirname, 'config');
 var key = path.join(dir, 'id_rsa');
 
+var dns;
+
 var localAddress = 'localhost';
-var localPort = '3007';
+var localPort = String(argv._[0]) || '80';
+if (localPort && localPort.indexOf(':') > -1) {
+    localAddress = localPort.split(':')[0];
+    localPort = localPort.split(':')[1];
+}
 
 exec('rm -r ' + dir, function() {
     fs.mkdir(dir, function(err) {
@@ -49,6 +55,7 @@ exec('rm -r ' + dir, function() {
                         console.error('Unexpected server response', body);
                         throw new Error('Unexpected server response');
                     }
+                    dns = body.url;
                     establishConnection(body.port, key);
                 });
             });
@@ -75,13 +82,13 @@ function establishConnection(remotePort, key) {
         });
     });
     ssh.on('ready', function() {
-        console.log('ssh connection ready');
         setTimeout(function() {
             ssh.forwardIn(server, remotePort, function(err) {
                 if (err) {
                     throw err;
                 }
-                console.log('forwarding from ' + server + ':' + remotePort);
+                console.log(dns + ' forwarded to http://' + localAddress + ':' + localPort);
+                console.log('\nView the requests at http://' + server + '/' + dns.split('/')[2].split('.')[0] + '/requests');
             });
         }, 1000);
     });
